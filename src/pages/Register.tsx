@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router";
 import {
   TextInput,
   PasswordInput,
@@ -12,8 +11,9 @@ import {
   Group,
   Button,
 } from "@mantine/core";
-import { registerUser } from "../../service/api";
+import { registerUser } from "../service/api";
 import bcrypt from "bcryptjs";
+import { useNavigate } from "react-router";
 
 const Register = () => {
   const navigate = useNavigate();

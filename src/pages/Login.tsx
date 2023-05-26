@@ -12,7 +12,7 @@ import {
   Button,
 } from "@mantine/core";
 import { useNavigate } from "react-router";
-import { loginUser } from "../../service/api";
+import { loginUser } from "../service/api";
 import bcrypt from "bcryptjs";
 
 const Login = () => {
