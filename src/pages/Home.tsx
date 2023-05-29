@@ -1,9 +1,65 @@
 import React, { useEffect, useState } from "react";
-import { Navigate, Route, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import {
+  Button,
+  Container,
+  Flex,
+  Group,
+  List,
+  Text,
+  ThemeIcon,
+  Title,
+  createStyles,
+  rem,
+} from "@mantine/core";
+
+const useStyles = createStyles((theme) => ({
+  inner: {
+    display: "flex",
+    justifyContent: "space-between",
+    paddingTop: `calc(${theme.spacing.xl} * 4)`,
+    paddingBottom: `calc(${theme.spacing.xl} * 4)`,
+  },
+  content: {
+    maxWidth: rem(480),
+    marginRight: `calc(${theme.spacing.xl} * 3)`,
+
+    [theme.fn.smallerThan("md")]: {
+      maxWidth: "100%",
+      marginRight: 0,
+    },
+  },
+  title: {
+    color: theme.colorScheme === "dark" ? theme.white : theme.black,
+    fontFamily: `Greycliff CF, ${theme.fontFamily}`,
+    fontSize: rem(44),
+    lineHeight: 1.2,
+    fontWeight: 900,
+
+    [theme.fn.smallerThan("xs")]: {
+      fontSize: rem(28),
+    },
+  },
+
+  control: {
+    display: "flex",
+    [theme.fn.smallerThan("xs")]: {},
+  },
+  highlight: {
+    position: "relative",
+    backgroundColor: theme.fn.variant({
+      variant: "light",
+      color: theme.primaryColor,
+    }).background,
+    borderRadius: theme.radius.sm,
+    padding: `${rem(4)} ${rem(12)}`,
+  },
+}));
 
 const Home = () => {
   const [userName, setUserName] = useState("");
   const navigate = useNavigate();
+  const { classes } = useStyles();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -14,7 +70,7 @@ const Home = () => {
 
         if (response.ok) {
           const user = await response.json();
-          setUserName(user.name);
+          setUserName(user.username);
         } else {
           navigate("/");
         }
@@ -39,44 +95,42 @@ const Home = () => {
     };
   }, []);
 
+  const handleOpenGithub = () => {
+    window.open("https://github.com/Nero-o/Go-Auth-backEnd", "_blank");
+  };
+
   return (
     <div>
-      <h1>Bem-vindo, {userName}!</h1>
-      <p>Esta é a página Home.</p>
+      <Container>
+        <div className={classes.inner}>
+          <div className={classes.content}>
+            <Title className={classes.title}>
+              Bem-vindo,<span className={classes.highlight}>{userName}!</span>
+            </Title>
+            <Text color="dimmed" mt="md">
+              Essa é uma aplicação web feita para cadastrar e autenticar
+              usuários. <br />
+              Espero que goste da experiência!
+            </Text>
+            <Group mt={30}>
+              <Button radius={"xl"} size="md" className={classes.control}>
+                Vamos começar
+              </Button>
+              <Button
+                variant="default"
+                radius="xl"
+                size="md"
+                className={classes.control}
+                onClick={handleOpenGithub}
+              >
+                Código Fonte
+              </Button>
+            </Group>
+          </div>
+        </div>
+      </Container>
     </div>
   );
 };
 
-const PrivateRoute = ({ element: Element, ...rest }: any) => {
-  const [authenticated, setAuthenticated] = useState(false);
-
-  useEffect(() => {
-    const checkAuthentication = async () => {
-      try {
-        const response = await fetch("http://localhost:8000/api/user", {
-          credentials: "include",
-        });
-
-        if (response.ok) {
-          setAuthenticated(true);
-        } else {
-          setAuthenticated(false);
-        }
-      } catch (error) {
-        console.error("Erro ao verificar autenticação:", error);
-        setAuthenticated(false);
-      }
-    };
-
-    checkAuthentication();
-  }, []);
-
-  return (
-    <Route
-      {...rest}
-      element={authenticated ? <Element /> : <Navigate to="/" replace />}
-    />
-  );
-};
-
-export { Home, PrivateRoute };
+export { Home };

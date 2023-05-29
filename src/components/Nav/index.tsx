@@ -56,6 +56,10 @@ const useStyles = createStyles((theme) => ({
       display: "none",
     },
   },
+  groupPosition: {
+    display: "flex",
+    justifyContent: "flex-end",
+  },
 }));
 
 interface HeaderResponsiveProps {
@@ -97,7 +101,11 @@ const CustomNavbar = (props: HeaderResponsiveProps) => {
     menu = (
       <div>
         <Header height={60} px={"md"}>
-          <Group position="apart" sx={{ height: "100%" }}>
+          <Group
+            className={classes.groupPosition}
+            position="apart"
+            sx={{ height: "100%" }}
+          >
             <Group className={classes.hiddenDesktop}>
               <Button variant="default" onClick={navigateLogin}>
                 Login
@@ -137,7 +145,11 @@ const CustomNavbar = (props: HeaderResponsiveProps) => {
     menu = (
       <div>
         <Header height={60} px={"md"}>
-          <Group position="apart" sx={{ height: "100%" }}>
+          <Group
+            className={classes.groupPosition}
+            position="apart"
+            sx={{ height: "100%" }}
+          >
             <Group className={classes.hiddenDesktop}>
               <Button onClick={logout} loading={isLoading}>
                 Logout
@@ -163,7 +175,13 @@ const CustomNavbar = (props: HeaderResponsiveProps) => {
             my="sm"
             color={theme.colorScheme === "dark" ? "dark.5" : "gray.1"}
           />
-          <Group position="center" grow pb="xl" px="md">
+          <Group
+            className={classes.groupPosition}
+            position="center"
+            grow
+            pb="xl"
+            px="md"
+          >
             <Button onClick={logout} loading={isLoading}>
               Logout
             </Button>

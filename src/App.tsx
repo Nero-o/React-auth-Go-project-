@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Login from "./pages/Login";
-import { Home, PrivateRoute } from "./pages/Home";
+import { Home } from "./pages/Home";
 import Register from "./pages/Register";
 import CustomNavbar from "./components/Nav";
 
@@ -19,7 +19,7 @@ function App() {
         const content = await response.json();
         setName(content.name);
       } else {
-        setName(""); // Define o nome como vazio se o usuário não estiver autenticado
+        setName("");
       }
     })();
   }, []);
