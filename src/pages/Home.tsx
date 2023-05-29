@@ -98,6 +98,9 @@ const Home = () => {
   const handleOpenGithub = () => {
     window.open("https://github.com/Nero-o/Go-Auth-backEnd", "_blank");
   };
+  const handleNextPage = () => {
+    navigate("/em-desenvolvimento");
+  };
 
   return (
     <div>
@@ -113,7 +116,12 @@ const Home = () => {
               Espero que goste da experiência!
             </Text>
             <Group mt={30}>
-              <Button radius={"xl"} size="md" className={classes.control}>
+              <Button
+                radius={"xl"}
+                size="md"
+                onClick={handleNextPage}
+                className={classes.control}
+              >
                 Vamos começar
               </Button>
               <Button
