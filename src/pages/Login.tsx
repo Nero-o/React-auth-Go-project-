@@ -1,55 +1,54 @@
-import React, { useState } from "react";
 import {
-  TextInput,
-  PasswordInput,
-  Checkbox,
   Anchor,
-  Paper,
-  Title,
-  Text,
+  Button,
+  Checkbox,
   Container,
   Group,
-  Button,
+  Paper,
+  PasswordInput,
+  Text,
+  TextInput,
+  Title,
 } from "@mantine/core";
+import { SyntheticEvent, useState } from "react";
 import { useNavigate } from "react-router";
-import { loginUser } from "../service/api";
-import bcrypt from "bcryptjs";
 
-const Login = () => {
-  const navigate = useNavigate();
+const Login = (props: { setName: (name: string) => void }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loginError, setLoginError] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleCreateAccount = () => {
+  const handleRegisterAccount = () => {
     navigate("/register");
   };
 
-  const handleNewPassword = () => {
-    navigate("/forgotPassword");
-  };
+  const submit = async (e: SyntheticEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
 
-  const handleSubmit = async () => {
-    try {
-      const userData = {
+    const response = await fetch("http://localhost:8000/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
         email,
         password,
-      };
-      const response = await loginUser(userData);
+      }),
+    });
+    navigate("/home");
 
-      if (response.success) {
-        navigate("/register");
-      } else {
-        setLoginError("Senha incorreta");
-      }
-    } catch (error: any) {
-      if (error.response && error.response.status === 401) {
-        setLoginError("Email inválido ou usuário inexistente");
-      } else {
-        console.error(error);
-        setLoginError("Erro ao fazer login");
-      }
+    const content = await response.json();
+
+    if (response.ok) {
+      setErrorMessage("");
+      props.setName(content.name);
+    } else {
+      setErrorMessage(content.message);
     }
+
+    setIsLoading(false);
   };
 
   return (
@@ -61,45 +60,41 @@ const Login = () => {
           fontWeight: 900,
         })}
       >
-        Bem-vindo de volta!
+        Bem vindo de volta
       </Title>
       <Text color="dimmed" size="sm" align="center" mt={5}>
-        Ainda não possui uma conta?{" "}
-        <Anchor size="sm" onClick={handleCreateAccount} component="button">
-          Crie uma conta
+        Ainda não tem uma conta?{" "}
+        <Anchor size="sm" component="button" onClick={handleRegisterAccount}>
+          Cadastre-se
         </Anchor>
       </Text>
-
       <Paper withBorder shadow="md" p={30} mt={30} radius="md">
-        <TextInput
-          label="Email"
-          placeholder="seu@email.com"
-          required
-          value={email}
-          onChange={(event) => setEmail(event.currentTarget.value)}
-        />
-        <PasswordInput
-          label="Password"
-          placeholder="*******"
-          required
-          mt="md"
-          value={password}
-          onChange={(event) => setPassword(event.currentTarget.value)}
-        />
-        {loginError && (
-          <Text color="red" size="sm" mt={10}>
-            {loginError}
-          </Text>
-        )}
-        <Group position="apart" mt="lg">
-          <Checkbox label="Lembrar de mim" />
-          <Anchor component="button" onClick={handleNewPassword} size="sm">
-            Esqueceu a senha?
-          </Anchor>
-        </Group>
-        <Button fullWidth mt="xl" onClick={handleSubmit}>
-          Entrar
-        </Button>
+        <form onSubmit={submit}>
+          <TextInput
+            label="Email"
+            placeholder="seu@email.com"
+            required
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <PasswordInput
+            label="Senha"
+            placeholder="*********"
+            required
+            mt="md"
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <Group position="apart" mt="lg">
+            <Checkbox label="Lembrar de mim" />
+          </Group>
+          {errorMessage && (
+            <Text color="red" mt="sm">
+              {errorMessage}
+            </Text>
+          )}
+          <Button fullWidth mt="xl" type="submit" loading={isLoading}>
+            Entrar
+          </Button>
+        </form>
       </Paper>
     </Container>
   );

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { SyntheticEvent, useState } from "react";
 import {
   TextInput,
   PasswordInput,
@@ -11,7 +11,6 @@ import {
   Group,
   Button,
 } from "@mantine/core";
-import { registerUser } from "../service/api";
 import bcrypt from "bcryptjs";
 import { useNavigate } from "react-router";
 
@@ -23,49 +22,61 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [emailError, setEmailError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLoginAccount = () => {
-    navigate("/login");
+    navigate("/");
   };
 
-  const handleSubmit = async () => {
-    if (password !== confirmPassword) {
-      setPasswordError("As senhas não coincidem");
-      return;
-    }
+  const isEmailValid = (email: string) => {
+    const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+    return emailRegex.test(email);
+  };
 
+  const isPasswordValid = (password: string) => {
     const passwordRegex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+    return passwordRegex.test(password);
+  };
 
-    if (!password.match(passwordRegex)) {
+  const handleSubmit = async (e: SyntheticEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    if (!isPasswordValid(password)) {
       setPasswordError(
-        "A senha deve conter pelo menos uma letra maiúscula, uma letra minúscula, um número e um caractere especial"
+        "A senha deve conter no mínimo 6 caracteres, uma letra maiúscula, uma letra minúscula, um número e um caractere especial"
       );
       return;
     }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email.match(emailRegex)) {
-      setEmailError("Email inválido");
+
+    if (!isEmailValid(email)) {
+      setEmailError("E-mail inválido");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setPasswordError("As senhas não são idênticas");
       return;
     }
 
-    try {
-      const saltRounds = 10;
-      const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-      const userData = {
+    const response = await fetch("http://localhost:8000/api/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
         username,
         email,
-        password: hashedPassword,
-      };
-
-      const response = await registerUser(userData);
-      console.log(response);
-
-      navigate("/login");
-    } catch (error) {
-      console.error(error); // Faça algo com o erro, como exibir uma mensagem de erro
+        password,
+        confirmPassword,
+      }),
+    });
+    if (response.ok) {
+      navigate("/");
+    } else {
+      const data = await response.json();
+      setEmailError(data.message);
     }
+
+    setIsLoading(false);
   };
 
   return (
@@ -87,46 +98,49 @@ const Register = () => {
       </Text>
 
       <Paper withBorder shadow="md" p={30} mt={30} radius="md">
-        <TextInput
-          label="Nome"
-          placeholder="Nome"
-          required
-          value={username}
-          onChange={(event) => setUsername(event.currentTarget.value)}
-        />
-        <TextInput
-          label="Email"
-          placeholder="seu@email.com"
-          required
-          error={emailError && emailError}
-          value={email}
-          onChange={(event) => setEmail(event.currentTarget.value)}
-        />
-        <PasswordInput
-          label="Senha"
-          placeholder="*******"
-          required
-          error={passwordError && passwordError}
-          value={password}
-          onChange={(event) => setPassword(event.currentTarget.value)}
-        />
-        <PasswordInput
-          label="Confirme sua senha"
-          placeholder="*******"
-          required
-          error={passwordError && passwordError}
-          value={confirmPassword}
-          onChange={(event) => setConfirmPassword(event.currentTarget.value)}
-        />
-        <Group position="apart" mt="lg">
-          <Checkbox label="Lembrar de mim" />
-          <Anchor component="button" size="sm">
-            Esqueceu a senha?
-          </Anchor>
-        </Group>
-        <Button fullWidth mt="xl" onClick={handleSubmit}>
-          Entrar
-        </Button>
+        <form onSubmit={handleSubmit}>
+          <TextInput
+            label="Nome"
+            placeholder="Nome"
+            required
+            value={username}
+            onChange={(event) => setUsername(event.currentTarget.value)}
+          />
+          <TextInput
+            label="Email"
+            placeholder="seu@email.com"
+            required
+            value={email}
+            onChange={(event) => setEmail(event.currentTarget.value)}
+            error={emailError}
+            onFocus={() => setEmailError("")}
+          />
+
+          <PasswordInput
+            label="Senha"
+            placeholder="*******"
+            required
+            value={password}
+            error={passwordError}
+            onFocus={() => setPasswordError("")}
+            onChange={(event) => setPassword(event.currentTarget.value)}
+          />
+          <PasswordInput
+            label="Confirme sua senha"
+            placeholder="*******"
+            required
+            error={passwordError && passwordError}
+            onFocus={() => setPasswordError("")}
+            value={confirmPassword}
+            onChange={(event) => setConfirmPassword(event.currentTarget.value)}
+          />
+          <Group position="apart" mt="lg">
+            <Checkbox label="Lembrar de mim" />
+          </Group>
+          <Button fullWidth mt="xl" type="submit" loading={isLoading}>
+            Entrar
+          </Button>
+        </form>
       </Paper>
     </Container>
   );
